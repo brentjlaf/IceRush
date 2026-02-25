@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IceRush 3v3</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Rajdhani:wght@400;600;700&display=swap');
+
+  :root {
+    --neon-blue: #00d4ff;
+    --neon-pink: #ff2d78;
+    --neon-green: #00ff9f;
+    --neon-yellow: #ffe600;
+    --ice: #a8d8ea;
+    --dark: #060b14;
+    --panel: rgba(6,11,20,0.92);
+    --text: #e8f4fd;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  #game-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #hud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 900px;
+    padding: 6px 12px;
+    background: var(--panel);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 8px;
+  }
+
+  .team-score {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .team-name {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 14px;
+    letter-spacing: 2px;
+  }
+
+  .score-num {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 36px;
+    line-height: 1;
+    text-shadow: 0 0 20px currentColor;
+  }
+
+  .blue-team { color: var(--neon-blue); }
+  .red-team { color: var(--neon-pink); }
+
+  #timer-wrap {
+    text-align: center;
+  }
+
+  #timer {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 28px;
+    color: var(--text);
+    letter-spacing: 3px;
+  }
+
+  #period-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  #boost-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  #boost-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--neon-yellow);
+    opacity: 0.8;
+  }
+
+  #boost-bar-bg {
+    width: 100px;
+    height: 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 5px;
+    border: 1px solid rgba(255,230,0,0.3);
+    overflow: hidden;
+  }
+
+  #boost-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ffe600, #ffaa00);
+    border-radius: 5px;
+    transition: width 0.1s;
+    box-shadow: 0 0 8px #ffe600;
+  }
+
+  canvas {
+    display: block;
+    border-radius: 12px;
+    border: 2px solid rgba(0,212,255,0.25);
+    box-shadow: 0 0 40px rgba(0,212,255,0.15), 0 0 80px rgba(255,45,120,0.08), inset 0 0 60px rgba(0,212,255,0.03);
+    cursor: none;
+  }
+
+  #controls-hint {
+    display: flex;
+    gap: 20px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 1px;
+  }
+
+  #controls-hint span { color: rgba(255,255,255,0.6); }
+
+  /* SCREENS */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6,11,20,0.95);
+    border-radius: 10px;
+    z-index: 100;
+    gap: 20px;
+    padding: 40px;
+    text-align: center;
+  }
+
+  .screen.hidden { display: none; }
+
+  .logo {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 72px;
+    background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 0 30px rgba(0,212,255,0.5));
+    line-height: 1;
+  }
+
+  .logo-sub {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 20px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 8px;
+    margin-top: -8px;
+  }
+
+  .btn {
+    padding: 14px 48px;
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 20px;
+    letter-spacing: 4px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--neon-blue), #0088cc);
+    color: var(--dark);
+    box-shadow: 0 0 30px rgba(0,212,255,0.4);
+  }
+
+  .btn-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 50px rgba(0,212,255,0.7);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--neon-pink);
+    border: 2px solid var(--neon-pink);
+    box-shadow: 0 0 20px rgba(255,45,120,0.2);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255,45,120,0.1);
+    box-shadow: 0 0 30px rgba(255,45,120,0.5);
+  }
+
+  .result-title {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+  }
+
+  .result-win { color: var(--neon-blue); filter: drop-shadow(0 0 20px var(--neon-blue)); }
+  .result-lose { color: var(--neon-pink); filter: drop-shadow(0 0 20px var(--neon-pink)); }
+  .result-tie { color: var(--neon-yellow); filter: drop-shadow(0 0 20px var(--neon-yellow)); }
+
+  .final-score {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 48px;
+    color: var(--text);
+    letter-spacing: 10px;
+  }
+
+  .xp-gained {
+    font-size: 18px;
+    color: var(--neon-green);
+    letter-spacing: 2px;
+  }
+
+  #powerup-notice {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    text-shadow: 0 0 20px currentColor;
+    z-index: 50;
+    white-space: nowrap;
+  }
+
+  #goal-flash {
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 80px;
+    letter-spacing: 6px;
+  }
+
+  .active-powerup-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    min-width: 80px;
+  }
+
+  .active-powerup-icon {
+    font-size: 18px;
+  }
+
+  .active-powerup-timer {
+    color: var(--neon-green);
+    font-weight: 700;
+  }
+
+  #shake-wrapper {
+    position: relative;
+  }
+
+  @keyframes screenShake {
+    0%, 100% { transform: translate(0,0); }
+    20% { transform: translate(-6px, 4px); }
+    40% { transform: translate(6px, -4px); }
+    60% { transform: translate(-4px, 6px); }
+    80% { transform: translate(4px, -2px); }
+  }
+
+  .shaking { animation: screenShake 0.35s ease; }
+
+  @keyframes goalPulse {
+    0% { opacity: 0; transform: scale(0.5); }
+    20% { opacity: 1; transform: scale(1.1); }
+    80% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.9); }
+  }
+
+  .goal-anim { animation: goalPulse 1.2s ease forwards; }
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <div id="hud">
+    <div class="team-score blue-team">
+      <div class="team-name">🔵 YOU</div>
+      <div class="score-num" id="score-blue">0</div>
+    </div>
+    <div style="display:flex;gap:20px;align-items:center;">
+      <div class="active-powerup-display" id="powerup-display" style="opacity:0;">
+        <span class="active-powerup-icon" id="pu-icon"></span>
+        <span class="active-powerup-timer" id="pu-timer"></span>
+      </div>
+      <div id="timer-wrap">
+        <div id="timer">2:00</div>
+        <div id="period-label">PERIOD 1</div>
+      </div>
+      <div id="boost-wrap">
+        <div id="boost-label">⚡ BOOST</div>
+        <div id="boost-bar-bg"><div id="boost-bar" style="width:100%"></div></div>
+      </div>
+    </div>
+    <div class="team-score red-team">
+      <div class="score-num" id="score-red">0</div>
+      <div class="team-name">BOTS 🔴</div>
+    </div>
+  </div>
+
+  <div id="shake-wrapper">
+    <canvas id="c" width="900" height="520"></canvas>
+    <div id="goal-flash"></div>
+    <div id="powerup-notice"></div>
+
+    <!-- START SCREEN -->
+    <div class="screen" id="screen-start">
+      <div class="logo">🏒 ICERUSH</div>
+      <div class="logo-sub">3 VS 3</div>
+      <p style="color:rgba(255,255,255,0.5);font-size:15px;max-width:400px;line-height:1.6;letter-spacing:1px;">Fast. Physical. Competitive. Score goals, crush opponents, grab power-ups. 2 minutes on the clock.</p>
+      <button class="btn btn-primary" onclick="startGame()">▶ PLAY NOW</button>
+      <div style="color:rgba(255,255,255,0.3);font-size:12px;letter-spacing:2px;">WASD MOVE · SHIFT BOOST · SPACE SHOOT · F CHECK</div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div class="screen hidden" id="screen-end">
+      <div class="result-title" id="result-title">YOU WIN!</div>
+      <div class="final-score" id="final-score">0 — 0</div>
+      <div class="xp-gained" id="xp-display">+120 XP · RANK UP!</div>
+      <button class="btn btn-primary" onclick="startGame()">▶ PLAY AGAIN</button>
+      <button class="btn btn-secondary" onclick="showStart()">MAIN MENU</button>
+    </div>
+  </div>
+
+  <div id="controls-hint">
+    <div>WASD <span>Move</span></div>
+    <div>SHIFT <span>Boost</span></div>
+    <div>SPACE <span>Shoot</span></div>
+    <div>E <span>Pass</span></div>
+    <div>F <span>Body Check</span></div>
+  </div>
+</div>
+
+<script>
+// ===== CANVAS & CTX =====
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// ===== RINK DIMENSIONS =====
+const RINK = { x: 40, y: 40, w: W-80, h: H-80, r: 50 };
+const GOAL_W = 14, GOAL_H = 80;
+const GOAL_L = { x: RINK.x, y: RINK.y + RINK.h/2 - GOAL_H/2 };
+const GOAL_R = { x: RINK.x + RINK.w - GOAL_W, y: RINK.y + RINK.h/2 - GOAL_H/2 };
+
+// ===== GAME STATE =====
+let state = 'start';
+let score = [0, 0];
+let timeLeft = 120;
+let lastTime = 0;
+let timerAccum = 0;
+let gameLoop = null;
+let particles = [];
+let iceParticles = [];
+let powerups = [];
+let powerupSpawnTimer = 0;
+let activePowerup = null;
+let activePowerupTimer = 0;
+let goalFlashTimer = 0;
+let noticeTimer = 0;
+let xpTotal = 0;
+
+const keys = {};
+window.addEventListener('keydown', e => { keys[e.code] = true; e.preventDefault(); });
+window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+// ===== PLAYER FACTORY =====
+function makePlayer(x, y, team, isHuman = false) {
+  return {
+    x, y, vx: 0, vy: 0,
+    team, isHuman,
+    r: 18,
+    speed: isHuman ? 220 : 190,
+    boost: 100,
+    maxBoost: 100,
+    hasPuck: false,
+    stunTimer: 0,
+    checkCooldown: 0,
+    checkShield: false,
+    trailPoints: [],
+    weight: 1.0,
+    number: Math.floor(Math.random()*99)+1,
+  };
+}
+
+// ===== PUCK =====
+let puck = { x: W/2, y: H/2, vx: 0, vy: 0, r: 9, frozen: false, frozenTimer: 0, slapBoost: false };
+
+// ===== PLAYERS =====
+let players = [];
+let human;
+
+function initPlayers() {
+  players = [];
+  // Blue team (human + 2 AI)
+  human = makePlayer(RINK.x+80, H/2, 0, true);
+  players.push(human);
+  players.push(makePlayer(RINK.x+80, H/2-80, 0));
+  players.push(makePlayer(RINK.x+80, H/2+80, 0));
+  // Red team (3 AI)
+  players.push(makePlayer(RINK.x+RINK.w-80, H/2, 1));
+  players.push(makePlayer(RINK.x+RINK.w-80, H/2-80, 1));
+  players.push(makePlayer(RINK.x+RINK.w-80, H/2+80, 1));
+}
+
+function resetPositions() {
+  const starts = [
+    [RINK.x+80, H/2], [RINK.x+80, H/2-80], [RINK.x+80, H/2+80],
+    [RINK.x+RINK.w-80, H/2], [RINK.x+RINK.w-80, H/2-80], [RINK.x+RINK.w-80, H/2+80]
+  ];
+  players.forEach((p,i) => {
+    p.x = starts[i][0]; p.y = starts[i][1];
+    p.vx = 0; p.vy = 0;
+    p.hasPuck = false;
+    p.stunTimer = 0;
+  });
+  puck.x = W/2; puck.y = H/2;
+  puck.vx = (Math.random()-0.5)*200;
+  puck.vy = (Math.random()-0.5)*200;
+  puck.frozen = false; puck.slapBoost = false;
+}
+
+// ===== AI =====
+function updateAI(p, dt) {
+  if (p.stunTimer > 0) return;
+  const teammates = players.filter(t => t !== p && t.team === p.team);
+  const enemies = players.filter(t => t.team !== p.team);
+  
+  let tx = puck.x, ty = puck.y;
+  
+  if (p.hasPuck) {
+    // Move toward opponent goal
+    const targetGoal = p.team === 0 ? { x: GOAL_R.x+GOAL_W/2, y: H/2 } : { x: GOAL_L.x+GOAL_W/2, y: H/2 };
+    tx = targetGoal.x; ty = targetGoal.y;
+    
+    // Shoot if close enough
+    const dx = targetGoal.x - p.x, dy = targetGoal.y - p.y;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    if (dist < 250 && Math.random() < 0.03) {
+      shootPuck(p);
+    }
+  } else {
+    // Go after puck or play position
+    const puckDist = Math.hypot(puck.x - p.x, puck.y - p.y);
+    if (puckDist < 200) {
+      tx = puck.x; ty = puck.y;
+    } else {
+      // Position play
+      const defX = p.team === 0 ? RINK.x + RINK.w*0.3 : RINK.x + RINK.w*0.7;
+      const offset = (teammates.indexOf(p) - 1) * 90;
+      tx = defX; ty = H/2 + offset;
+    }
+  }
+
+  // Body check nearby enemy if cooldown ready
+  if (p.checkCooldown <= 0) {
+    for (const e of enemies) {
+      const d = Math.hypot(e.x - p.x, e.y - p.y);
+      if (d < 45 && e.hasPuck) {
+        bodyCheck(p, e);
+        break;
+      }
+    }
+  }
+
+  const dx = tx - p.x, dy = ty - p.y;
+  const d = Math.sqrt(dx*dx+dy*dy);
+  if (d > 5) {
+    const spd = p.speed * (Math.random() < 0.1 ? 1.3 : 0.85);
+    p.vx = (dx/d)*spd; p.vy = (dy/d)*spd;
+  }
+
+  // Boost AI occasionally
+  if (Math.random() < 0.005 && p.boost > 30) {
+    p.vx *= 1.5; p.vy *= 1.5;
+    p.boost -= 20;
+  }
+}
+
+// ===== HUMAN CONTROLS =====
+function updateHuman(dt) {
+  if (human.stunTimer > 0) return;
+  
+  let dx = 0, dy = 0;
+  if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
+  if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
+  if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
+  if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
+
+  const len = Math.sqrt(dx*dx+dy*dy);
+  if (len > 0) {
+    dx /= len; dy /= len;
+    let spd = human.speed;
+    const boosting = keys['ShiftLeft'] || keys['ShiftRight'];
+    if (boosting && human.boost > 0) {
+      spd *= 1.65;
+      human.boost = Math.max(0, human.boost - 60*dt);
+    }
+    // Speed burst powerup
+    if (activePowerup === 'speed') spd *= 1.6;
+    human.vx = dx * spd;
+    human.vy = dy * spd;
+  } else {
+    human.vx *= 0.7;
+    human.vy *= 0.7;
+  }
+
+  // Shoot
+  if (keys['Space'] && human.hasPuck) {
+    shootPuck(human);
+    keys['Space'] = false;
+  }
+
+  // Body check
+  if (keys['KeyF'] && human.checkCooldown <= 0) {
+    const enemies = players.filter(p => p.team !== human.team);
+    for (const e of enemies) {
+      const d = Math.hypot(e.x - human.x, e.y - human.y);
+      if (d < 55) {
+        bodyCheck(human, e);
+        break;
+      }
+    }
+    human.checkCooldown = 1.2;
+    keys['KeyF'] = false;
+  }
+
+  // Pass
+  if (keys['KeyE'] && human.hasPuck) {
+    passToTeammate(human);
+    keys['KeyE'] = false;
+  }
+}
+
+// ===== SHOOT =====
+function shootPuck(p) {
+  if (!p.hasPuck) return;
+  p.hasPuck = false;
+  puck.x = p.x; puck.y = p.y;
+  const targetGoal = p.team === 0 ? { x: GOAL_R.x+GOAL_W/2, y: H/2 } : { x: GOAL_L.x+GOAL_W/2, y: H/2 };
+  const dx = targetGoal.x - p.x, dy = targetGoal.y - p.y;
+  const d = Math.sqrt(dx*dx+dy*dy) || 1;
+  let spd = 500 + Math.random()*100;
+  if (p.isHuman && activePowerup === 'slapshot') { spd *= 2; activePowerup = null; }
+  puck.vx = (dx/d)*spd; puck.vy = (dy/d)*spd;
+  spawnParticles(p.x, p.y, p.team === 0 ? '#00d4ff' : '#ff2d78', 8);
+}
+
+// ===== PASS =====
+function passToTeammate(p) {
+  const mates = players.filter(m => m !== p && m.team === p.team);
+  if (!mates.length) return;
+  let best = mates[0], bestD = Infinity;
+  for (const m of mates) {
+    const d = Math.hypot(m.x - p.x, m.y - p.y);
+    if (d < bestD) { bestD = d; best = m; }
+  }
+  p.hasPuck = false;
+  puck.x = p.x; puck.y = p.y;
+  const dx = best.x - p.x, dy = best.y - p.y;
+  const d = Math.sqrt(dx*dx+dy*dy) || 1;
+  puck.vx = (dx/d)*400; puck.vy = (dy/d)*400;
+}
+
+// ===== BODY CHECK =====
+function bodyCheck(attacker, target) {
+  if (target.checkShield || target === attacker) return;
+  attacker.checkCooldown = 1.5;
+  const dx = target.x - attacker.x, dy = target.y - attacker.y;
+  const d = Math.sqrt(dx*dx+dy*dy) || 1;
+  const spd = Math.sqrt(attacker.vx**2 + attacker.vy**2);
+  const force = (spd * 1.2 + 120) * attacker.weight;
+  target.vx = (dx/d) * force;
+  target.vy = (dy/d) * force;
+  target.stunTimer = 0.6;
+  if (target.hasPuck) {
+    target.hasPuck = false;
+    puck.vx = (dx/d)*300 + (Math.random()-0.5)*100;
+    puck.vy = (dy/d)*300 + (Math.random()-0.5)*100;
+  }
+  // Screen shake
+  triggerShake();
+  // Ice cracks
+  for (let i = 0; i < 6; i++) {
+    iceParticles.push({
+      x: target.x, y: target.y,
+      vx: (Math.random()-0.5)*120, vy: (Math.random()-0.5)*120,
+      life: 1.2, maxLife: 1.2,
+      len: Math.random()*30+10,
+      angle: Math.random()*Math.PI*2
+    });
+  }
+  spawnParticles(target.x, target.y, '#ffffff', 12);
+  // Boost refill for attacker
+  if (attacker.isHuman) {
+    attacker.boost = Math.min(attacker.maxBoost, attacker.boost + 25);
+    showNotice('💥 BIG HIT!', '#ffffff');
+  }
+}
+
+// ===== PUCK PHYSICS =====
+function updatePuck(dt) {
+  if (puck.frozen) {
+    puck.frozenTimer -= dt;
+    if (puck.frozenTimer <= 0) puck.frozen = false;
+    return;
+  }
+
+  // Apply friction
+  const friction = 0.97;
+  puck.vx *= Math.pow(friction, dt*60);
+  puck.vy *= Math.pow(friction, dt*60);
+
+  puck.x += puck.vx * dt;
+  puck.y += puck.vy * dt;
+
+  // Board bounces
+  if (puck.x - puck.r < RINK.x) { puck.x = RINK.x + puck.r; puck.vx = Math.abs(puck.vx)*1.05; }
+  if (puck.x + puck.r > RINK.x+RINK.w) { puck.x = RINK.x+RINK.w - puck.r; puck.vx = -Math.abs(puck.vx)*1.05; }
+  if (puck.y - puck.r < RINK.y) { puck.y = RINK.y + puck.r; puck.vy = Math.abs(puck.vy)*1.05; }
+  if (puck.y + puck.r > RINK.y+RINK.h) { puck.y = RINK.y+RINK.h - puck.r; puck.vy = -Math.abs(puck.vy)*1.05; }
+
+  // Goal detection — Blue scores in RED goal (right), Red scores in BLUE goal (left)
+  // Right goal (red team's net)
+  if (puck.x + puck.r > GOAL_R.x && puck.y > GOAL_R.y && puck.y < GOAL_R.y + GOAL_H) {
+    goalScored(0);
+  }
+  // Left goal (blue team's net)
+  if (puck.x - puck.r < GOAL_L.x + GOAL_W && puck.y > GOAL_L.y && puck.y < GOAL_L.y + GOAL_H) {
+    goalScored(1);
+  }
+
+  // Pick up puck
+  for (const p of players) {
+    if (p.hasPuck) continue;
+    if (p.stunTimer > 0) continue;
+    const d = Math.hypot(puck.x - p.x, puck.y - p.y);
+    if (d < p.r + puck.r + 2) {
+      p.hasPuck = true;
+      puck.vx = 0; puck.vy = 0;
+      // Boost refill if team controls puck
+      if (p.isHuman) human.boost = Math.min(human.maxBoost, human.boost + 8);
+    }
+  }
+}
+
+// ===== GOAL =====
+let goalCooldown = 0;
+function goalScored(team) {
+  if (goalCooldown > 0) return;
+  goalCooldown = 2.5;
+  score[team]++;
+  document.getElementById('score-blue').textContent = score[0];
+  document.getElementById('score-red').textContent = score[1];
+  
+  const flash = document.getElementById('goal-flash');
+  flash.textContent = team === 0 ? '🔵 GOAL!' : '🔴 GOAL!';
+  flash.style.color = team === 0 ? '#00d4ff' : '#ff2d78';
+  flash.style.textShadow = `0 0 40px ${team===0?'#00d4ff':'#ff2d78'}`;
+  flash.classList.add('goal-anim');
+  setTimeout(() => flash.classList.remove('goal-anim'), 1200);
+
+  for (let i = 0; i < 30; i++) {
+    const angle = (i/30)*Math.PI*2;
+    particles.push({
+      x: W/2, y: H/2,
+      vx: Math.cos(angle)*(200+Math.random()*200),
+      vy: Math.sin(angle)*(200+Math.random()*200),
+      life: 1.5, maxLife: 1.5,
+      r: Math.random()*5+2,
+      color: team === 0 ? '#00d4ff' : '#ff2d78'
+    });
+  }
+
+  setTimeout(resetPositions, 800);
+}
+
+// ===== PLAYER PHYSICS =====
+function updatePlayers(dt) {
+  for (const p of players) {
+    if (p.stunTimer > 0) {
+      p.stunTimer -= dt;
+      p.vx *= 0.85;
+      p.vy *= 0.85;
+    }
+    if (p.checkCooldown > 0) p.checkCooldown -= dt;
+
+    if (p.isHuman) {
+      updateHuman(dt);
+    } else {
+      updateAI(p, dt);
+    }
+
+    // Friction
+    if (!p.isHuman || (!keys['KeyW'] && !keys['KeyS'] && !keys['KeyA'] && !keys['KeyD'])) {
+      if (!p.isHuman) {
+        p.vx *= 0.88;
+        p.vy *= 0.88;
+      }
+    }
+
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+
+    // Board clamp
+    p.x = Math.max(RINK.x+p.r, Math.min(RINK.x+RINK.w-p.r, p.x));
+    p.y = Math.max(RINK.y+p.r, Math.min(RINK.y+RINK.h-p.r, p.y));
+
+    // Trail
+    p.trailPoints.unshift({ x: p.x, y: p.y });
+    if (p.trailPoints.length > 12) p.trailPoints.pop();
+
+    // Boost refill
+    const refillRate = 20;
+    p.boost = Math.min(p.maxBoost, p.boost + refillRate * dt);
+
+    // Carry puck
+    if (p.hasPuck) {
+      const dir = Math.atan2(p.vy, p.vx) || 0;
+      puck.x = p.x + Math.cos(dir)*24;
+      puck.y = p.y + Math.sin(dir)*24;
+    }
+  }
+
+  // Player vs player collision
+  for (let i = 0; i < players.length; i++) {
+    for (let j = i+1; j < players.length; j++) {
+      const a = players[i], b = players[j];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.sqrt(dx*dx+dy*dy);
+      const minD = a.r + b.r;
+      if (d < minD && d > 0) {
+        const nx = dx/d, ny = dy/d;
+        const overlap = (minD - d) / 2;
+        a.x -= nx*overlap; a.y -= ny*overlap;
+        b.x += nx*overlap; b.y += ny*overlap;
+        // Elastic
+        const rv = (b.vx-a.vx)*nx + (b.vy-a.vy)*ny;
+        if (rv < 0) {
+          const imp = rv * 0.6;
+          a.vx += imp*nx; a.vy += imp*ny;
+          b.vx -= imp*nx; b.vy -= imp*ny;
+        }
+      }
+    }
+  }
+
+  // Update boost HUD
+  document.getElementById('boost-bar').style.width = human.boost + '%';
+}
+
+// ===== POWERUPS =====
+const POWERUP_TYPES = [
+  { id: 'speed', icon: '🔥', label: 'SPEED BURST', color: '#ff6600', duration: 5 },
+  { id: 'freeze', icon: '🧊', label: 'FREEZE PUCK', color: '#00d4ff', duration: 3 },
+  { id: 'slapshot', icon: '💣', label: 'SLAPSHOT BOOST', color: '#ffe600', duration: 0 },
+  { id: 'shield', icon: '🛡', label: 'CHECK SHIELD', color: '#00ff9f', duration: 6 },
+];
+
+function spawnPowerup() {
+  if (powerups.length >= 2) return;
+  const type = POWERUP_TYPES[Math.floor(Math.random()*POWERUP_TYPES.length)];
+  powerups.push({
+    x: RINK.x + 80 + Math.random()*(RINK.w-160),
+    y: RINK.y + 60 + Math.random()*(RINK.h-120),
+    type, r: 16, pulse: 0
+  });
+}
+
+function updatePowerups(dt) {
+  powerupSpawnTimer += dt;
+  if (powerupSpawnTimer >= 30) { powerupSpawnTimer = 0; spawnPowerup(); }
+
+  for (let i = powerups.length-1; i >= 0; i--) {
+    const pu = powerups[i];
+    pu.pulse += dt*3;
+    const d = Math.hypot(human.x - pu.x, human.y - pu.y);
+    if (d < human.r + pu.r) {
+      applyPowerup(pu.type);
+      powerups.splice(i, 1);
+      spawnParticles(pu.x, pu.y, pu.type.color, 16);
+    }
+  }
+
+  if (activePowerup) {
+    activePowerupTimer -= dt;
+    const display = document.getElementById('powerup-display');
+    display.style.opacity = '1';
+    document.getElementById('pu-icon').textContent = POWERUP_TYPES.find(t=>t.id===activePowerup)?.icon || '';
+    document.getElementById('pu-timer').textContent = activePowerupTimer.toFixed(1)+'s';
+    if (activePowerupTimer <= 0) {
+      activePowerup = null;
+      human.checkShield = false;
+      display.style.opacity = '0';
+    }
+  }
+}
+
+function applyPowerup(type) {
+  showNotice(type.icon + ' ' + type.label + '!', type.color);
+  if (type.id === 'freeze') {
+    puck.frozen = true; puck.frozenTimer = type.duration;
+    activePowerup = 'freeze'; activePowerupTimer = type.duration;
+  } else if (type.id === 'speed') {
+    activePowerup = 'speed'; activePowerupTimer = type.duration;
+  } else if (type.id === 'slapshot') {
+    activePowerup = 'slapshot'; activePowerupTimer = 8;
+  } else if (type.id === 'shield') {
+    human.checkShield = true;
+    activePowerup = 'shield'; activePowerupTimer = type.duration;
+  }
+}
+
+// ===== PARTICLES =====
+function spawnParticles(x, y, color, count) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random()*Math.PI*2;
+    const spd = Math.random()*150+50;
+    particles.push({ x, y, vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd, life: 0.8+Math.random()*0.4, maxLife: 1.2, r: Math.random()*4+1, color });
+  }
+}
+
+function updateParticles(dt) {
+  for (let i = particles.length-1; i >= 0; i--) {
+    const p = particles[i];
+    p.life -= dt;
+    p.x += p.vx*dt; p.y += p.vy*dt;
+    p.vx *= 0.95; p.vy *= 0.95;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+  for (let i = iceParticles.length-1; i >= 0; i--) {
+    const p = iceParticles[i];
+    p.life -= dt;
+    p.x += p.vx*dt; p.y += p.vy*dt;
+    if (p.life <= 0) iceParticles.splice(i, 1);
+  }
+}
+
+// ===== SCREEN SHAKE =====
+let shakeTimer = 0;
+function triggerShake() {
+  const el = document.getElementById('shake-wrapper');
+  el.classList.remove('shaking');
+  void el.offsetWidth;
+  el.classList.add('shaking');
+  setTimeout(() => el.classList.remove('shaking'), 350);
+}
+
+// ===== NOTICE =====
+function showNotice(text, color) {
+  const el = document.getElementById('powerup-notice');
+  el.textContent = text;
+  el.style.color = color;
+  el.style.opacity = '1';
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => el.style.opacity = '0', 1800);
+}
+
+// ===== TIMER =====
+function updateTimer(dt) {
+  if (goalCooldown > 0) { goalCooldown -= dt; return; }
+  timeLeft -= dt;
+  if (timeLeft <= 0) { timeLeft = 0; endGame(); return; }
+  const m = Math.floor(timeLeft/60);
+  const s = Math.floor(timeLeft%60);
+  document.getElementById('timer').textContent = m + ':' + String(s).padStart(2,'0');
+  if (timeLeft <= 30) document.getElementById('timer').style.color = '#ff2d78';
+}
+
+// ===== DRAW =====
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W/1.5);
+  bg.addColorStop(0, '#0a1628');
+  bg.addColorStop(1, '#060b14');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Ice rink
+  drawRink();
+
+  // Ice particles (cracks)
+  for (const ip of iceParticles) {
+    const a = ip.life / ip.maxLife;
+    ctx.save();
+    ctx.globalAlpha = a * 0.7;
+    ctx.strokeStyle = '#a8d8ea';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(ip.x, ip.y);
+    ctx.lineTo(ip.x + Math.cos(ip.angle)*ip.len, ip.y + Math.sin(ip.angle)*ip.len);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Power-up spots
+  drawPowerups();
+
+  // Player trails
+  for (const p of players) {
+    drawTrail(p);
+  }
+
+  // Players
+  for (const p of players) {
+    drawPlayer(p);
+  }
+
+  // Puck
+  drawPuck();
+
+  // Particles
+  for (const pt of particles) {
+    ctx.save();
+    ctx.globalAlpha = pt.life / pt.maxLife;
+    ctx.fillStyle = pt.color;
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawRink() {
+  ctx.save();
+
+  // Ice surface
+  const iceGrad = ctx.createLinearGradient(RINK.x, RINK.y, RINK.x+RINK.w, RINK.y+RINK.h);
+  iceGrad.addColorStop(0, 'rgba(168,216,234,0.08)');
+  iceGrad.addColorStop(0.5, 'rgba(200,230,245,0.13)');
+  iceGrad.addColorStop(1, 'rgba(168,216,234,0.08)');
+  
+  roundRect(ctx, RINK.x, RINK.y, RINK.w, RINK.h, RINK.r);
+  ctx.fillStyle = iceGrad;
+  ctx.fill();
+
+  // Subtle ice lines
+  ctx.strokeStyle = 'rgba(168,216,234,0.04)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 6; i++) {
+    ctx.beginPath();
+    ctx.moveTo(RINK.x, RINK.y + (RINK.h/6)*i);
+    ctx.lineTo(RINK.x+RINK.w, RINK.y + (RINK.h/6)*i);
+    ctx.stroke();
+  }
+
+  // Center line
+  ctx.strokeStyle = 'rgba(255,45,120,0.15)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(W/2, RINK.y);
+  ctx.lineTo(W/2, RINK.y+RINK.h);
+  ctx.stroke();
+
+  // Center circle
+  ctx.strokeStyle = 'rgba(0,212,255,0.2)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(W/2, H/2, 60, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(W/2, H/2, 5, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,45,120,0.5)';
+  ctx.fill();
+
+  // Boards
+  roundRect(ctx, RINK.x, RINK.y, RINK.w, RINK.h, RINK.r);
+  ctx.strokeStyle = 'rgba(0,212,255,0.5)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Goals
+  // Left goal (blue team protects)
+  ctx.fillStyle = 'rgba(0,212,255,0.15)';
+  ctx.strokeStyle = 'rgba(0,212,255,0.8)';
+  ctx.lineWidth = 2;
+  ctx.fillRect(GOAL_L.x - GOAL_W, GOAL_L.y, GOAL_W, GOAL_H);
+  ctx.strokeRect(GOAL_L.x - GOAL_W, GOAL_L.y, GOAL_W, GOAL_H);
+
+  // Right goal (red team protects)
+  ctx.fillStyle = 'rgba(255,45,120,0.15)';
+  ctx.strokeStyle = 'rgba(255,45,120,0.8)';
+  ctx.fillRect(GOAL_R.x, GOAL_R.y, GOAL_W, GOAL_H);
+  ctx.strokeRect(GOAL_R.x, GOAL_R.y, GOAL_W, GOAL_H);
+
+  ctx.restore();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+function drawPowerups() {
+  for (const pu of powerups) {
+    const pulse = Math.sin(pu.pulse)*0.3+0.7;
+    ctx.save();
+    ctx.globalAlpha = pulse;
+    // Glow ring
+    const grad = ctx.createRadialGradient(pu.x, pu.y, 0, pu.x, pu.y, pu.r*2);
+    grad.addColorStop(0, pu.type.color + '55');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(pu.x, pu.y, pu.r*2.5, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = pu.type.color + '33';
+    ctx.strokeStyle = pu.type.color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(pu.x, pu.y, pu.r, 0, Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = '16px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.globalAlpha = 1;
+    ctx.fillText(pu.type.icon, pu.x, pu.y);
+    ctx.restore();
+  }
+}
+
+function drawTrail(p) {
+  if (p.trailPoints.length < 2) return;
+  const color = p.team === 0 ? '0,212,255' : '255,45,120';
+  ctx.save();
+  for (let i = 0; i < p.trailPoints.length-1; i++) {
+    const a = (1 - i/p.trailPoints.length) * 0.25;
+    ctx.strokeStyle = `rgba(${color},${a})`;
+    ctx.lineWidth = Math.max(1, (p.r*0.6) * (1 - i/p.trailPoints.length));
+    ctx.beginPath();
+    ctx.moveTo(p.trailPoints[i].x, p.trailPoints[i].y);
+    ctx.lineTo(p.trailPoints[i+1].x, p.trailPoints[i+1].y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawPlayer(p) {
+  const color = p.team === 0 ? '#00d4ff' : '#ff2d78';
+  const glow = p.team === 0 ? 'rgba(0,212,255,0.4)' : 'rgba(255,45,120,0.4)';
+  const isStunned = p.stunTimer > 0;
+
+  ctx.save();
+
+  // Shield ring
+  if (p.checkShield) {
+    ctx.strokeStyle = '#00ff9f';
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = 0.7 + Math.sin(Date.now()/200)*0.3;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r+6, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Glow
+  const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*2);
+  g.addColorStop(0, glow);
+  g.addColorStop(1, 'transparent');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, p.r*2, 0, Math.PI*2);
+  ctx.fill();
+
+  // Body
+  ctx.globalAlpha = isStunned ? 0.5 : 1;
+  ctx.fillStyle = p.isHuman ? color : (p.team === 0 ? '#0077aa' : '#aa0044');
+  ctx.strokeStyle = color;
+  ctx.lineWidth = p.isHuman ? 3 : 2;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Inner highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.beginPath();
+  ctx.arc(p.x - 5, p.y - 5, p.r*0.45, 0, Math.PI*2);
+  ctx.fill();
+
+  // Number
+  ctx.fillStyle = '#fff';
+  ctx.font = `bold ${p.isHuman ? 12 : 10}px Rajdhani`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(p.isHuman ? '★' : p.number, p.x, p.y);
+
+  // Stun stars
+  if (isStunned) {
+    const t = Date.now()/300;
+    for (let i = 0; i < 3; i++) {
+      const a = (i/3)*Math.PI*2 + t;
+      const sx = p.x + Math.cos(a)*28;
+      const sy = p.y + Math.sin(a)*10 - 22;
+      ctx.globalAlpha = 0.9;
+      ctx.font = '12px serif';
+      ctx.fillText('⭐', sx, sy);
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawPuck() {
+  ctx.save();
+
+  if (puck.frozen) {
+    // Frozen effect
+    const g = ctx.createRadialGradient(puck.x, puck.y, 0, puck.x, puck.y, 20);
+    g.addColorStop(0, 'rgba(0,212,255,0.6)');
+    g.addColorStop(1, 'transparent');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(puck.x, puck.y, 20, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.beginPath();
+  ctx.ellipse(puck.x+2, puck.y+3, puck.r, puck.r*0.5, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Puck body
+  ctx.fillStyle = puck.frozen ? '#00d4ff' : '#1a1a2e';
+  ctx.strokeStyle = puck.frozen ? '#66f0ff' : '#444';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(puck.x, puck.y, puck.r, 0, Math.PI*2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Speed glow
+  const spd = Math.sqrt(puck.vx**2 + puck.vy**2);
+  if (spd > 200) {
+    const g2 = ctx.createRadialGradient(puck.x, puck.y, 0, puck.x, puck.y, puck.r*2.5);
+    g2.addColorStop(0, 'rgba(255,255,255,0.3)');
+    g2.addColorStop(1, 'transparent');
+    ctx.fillStyle = g2;
+    ctx.beginPath();
+    ctx.arc(puck.x, puck.y, puck.r*2.5, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+// ===== GAME LOOP =====
+function loop(ts) {
+  if (state !== 'playing') return;
+  const dt = Math.min((ts - lastTime) / 1000, 0.05);
+  lastTime = ts;
+
+  updateTimer(dt);
+  updatePlayers(dt);
+  updatePuck(dt);
+  updatePowerups(dt);
+  updateParticles(dt);
+
+  draw();
+
+  requestAnimationFrame(loop);
+}
+
+// ===== START / END =====
+function startGame() {
+  document.getElementById('screen-start').classList.add('hidden');
+  document.getElementById('screen-end').classList.add('hidden');
+  score = [0,0];
+  timeLeft = 120;
+  timerAccum = 0;
+  particles = [];
+  iceParticles = [];
+  powerups = [];
+  activePowerup = null;
+  powerupSpawnTimer = 15;
+  goalCooldown = 0;
+  document.getElementById('score-blue').textContent = '0';
+  document.getElementById('score-red').textContent = '0';
+  document.getElementById('timer').textContent = '2:00';
+  document.getElementById('timer').style.color = '';
+  document.getElementById('powerup-display').style.opacity = '0';
+  document.getElementById('powerup-notice').style.opacity = '0';
+
+  initPlayers();
+  resetPositions();
+
+  state = 'playing';
+  lastTime = performance.now();
+  requestAnimationFrame(loop);
+
+  // Spawn first powerup after 10s
+  setTimeout(spawnPowerup, 10000);
+}
+
+function endGame() {
+  state = 'end';
+  const endEl = document.getElementById('screen-end');
+  endEl.classList.remove('hidden');
+
+  const blueWins = score[0] > score[1];
+  const tied = score[0] === score[1];
+  const title = document.getElementById('result-title');
+  if (tied) { title.textContent = 'DRAW!'; title.className = 'result-title result-tie'; }
+  else if (blueWins) { title.textContent = '🏆 YOU WIN!'; title.className = 'result-title result-win'; }
+  else { title.textContent = 'DEFEAT'; title.className = 'result-title result-lose'; }
+
+  document.getElementById('final-score').textContent = score[0] + ' — ' + score[1];
+  const xp = (score[0] * 40) + (blueWins ? 80 : 0) + 20;
+  xpTotal += xp;
+  document.getElementById('xp-display').textContent = '+' + xp + ' XP · Total: ' + xpTotal;
+
+  draw();
+}
+
+function showStart() {
+  state = 'start';
+  document.getElementById('screen-end').classList.add('hidden');
+  document.getElementById('screen-start').classList.remove('hidden');
+  draw();
+}
+
+// Initial draw
+draw();
+</script>
+</body>
+</html>
