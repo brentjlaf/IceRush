@@ -3,16 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IceRush Prototype</title>
+    <title>IceRush 3v3</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="layout">
       <section class="hud" id="hud"></section>
       <canvas id="game" width="1100" height="680" aria-label="IceRush game arena"></canvas>
-      <section class="help">
-        <h1>IceRush Prototype</h1>
-        <p>WASD Move · Shift Boost · Space Shoot · E Pass · F Body Check</p>
+      <section class="help" aria-label="Controls">
+        <p><span>WASD</span> Move</p>
+        <p><span>Shift</span> Boost</p>
+        <p><span>Space</span> Shoot</p>
+        <p><span>E</span> Pass</p>
+        <p><span>F</span> Body Check</p>
       </section>
     </main>
     <script type="module" src="./main.js"></script>
