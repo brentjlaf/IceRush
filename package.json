@@ -2,9 +2,38 @@
   "name": "icerush-prototype",
   "version": "0.1.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "test": "node --test",
-    "check": "node --check client/main.js && node --check client/engine/game.js",
-    "dev": "node scripts/serve.js"
+    "check": "node --check client/main.js && node --check client/engine/game.js && node --check scripts/serve.js && node --check electron/main.cjs && node --check electron/static-server.cjs",
+    "dev": "node scripts/serve.js",
+    "desktop": "electron .",
+    "build:win": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.icerush.desktop",
+    "productName": "IceRush",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "client/**/*",
+      "shared/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "client/**/*",
+      "shared/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    }
   }
 }
