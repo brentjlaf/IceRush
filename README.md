@@ -19,9 +19,14 @@ This is a playable single-device prototype built from the planning docs in this 
 
 ## Run
 ```bash
+npm run dev
+```
+Then open `http://127.0.0.1:4173/client/`.
+
+If you'd rather use Python, this still works too:
+```bash
 python3 -m http.server 4173
 ```
-Then open `http://localhost:4173/client/`.
 
 ### Troubleshooting: `file://` CORS error in browser
 If you open `client/index.html` directly from disk (for example by double-clicking it), the browser will load the page from a `file://` URL. In that mode, `main.js` is treated as a cross-origin request and is blocked with errors like:

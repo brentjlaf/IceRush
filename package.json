@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check client/main.js && node --check client/engine/game.js"
+    "check": "node --check client/main.js && node --check client/engine/game.js",
+    "dev": "node scripts/serve.js"
   }
 }
