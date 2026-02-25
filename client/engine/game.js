@@ -246,11 +246,24 @@ export class Game {
 
   updateHud() {
     const boost = this.players[0].boost.toFixed(0);
+    const seconds = Math.ceil(this.clock);
+    const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const remainder = String(seconds % 60).padStart(2, '0');
     this.hud.innerHTML = `
-      <div class="pill">Blue ${this.score.blue} : ${this.score.pink} Pink</div>
-      <div class="pill">Time ${Math.ceil(this.clock)}s</div>
-      <div class="pill">Boost <span class="bar"><span style="width:${boost}%"></span></span></div>
-      <div class="pill">${this.flashText}</div>
+      <div class="pill team-score">
+        <span class="team blue">Blue <strong>${this.score.blue}</strong></span>
+        <span class="vs">VS</span>
+        <span class="team pink"><strong>${this.score.pink}</strong> Pink</span>
+      </div>
+      <div class="pill clock">
+        <span class="label">Period</span>
+        <span class="clock-time">${minutes}:${remainder}</span>
+      </div>
+      <div class="pill boost">
+        <span class="label">Boost</span>
+        <span class="bar"><span style="width:${boost}%"></span></span>
+      </div>
+      <div class="pill flash">${this.flashText}</div>
     `;
   }
 
