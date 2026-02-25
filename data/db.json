@@ -1,0 +1,140 @@
+{
+  "league": {
+    "name": "IceRush Online League",
+    "week": 1,
+    "teams": [
+      {
+        "id": "t001",
+        "name": "North City Blades",
+        "salary_cap_limit": 80,
+        "salary_cap_used": 28,
+        "roster": [
+          {
+            "id": "p001",
+            "name": "Mason Vale",
+            "overall": 84,
+            "salary": 9,
+            "traits": ["Clutch", "Locker room leader"]
+          },
+          {
+            "id": "p002",
+            "name": "Kai Drummond",
+            "overall": 79,
+            "salary": 7,
+            "traits": ["Dirty player"]
+          },
+          {
+            "id": "p003",
+            "name": "Noah Sutter",
+            "overall": 77,
+            "salary": 6,
+            "traits": ["Injury-prone"]
+          },
+          {
+            "id": "p004",
+            "name": "Leo Grant",
+            "overall": 74,
+            "salary": 6,
+            "traits": ["Clutch"]
+          }
+        ]
+      },
+      {
+        "id": "t002",
+        "name": "Harbor Wolves",
+        "salary_cap_limit": 80,
+        "salary_cap_used": 29,
+        "roster": [
+          {
+            "id": "p005",
+            "name": "Elias Quinn",
+            "overall": 85,
+            "salary": 10,
+            "traits": ["Clutch"]
+          },
+          {
+            "id": "p006",
+            "name": "Troy Halen",
+            "overall": 80,
+            "salary": 7,
+            "traits": ["Locker room leader"]
+          },
+          {
+            "id": "p007",
+            "name": "Ari Bell",
+            "overall": 76,
+            "salary": 6,
+            "traits": ["Injury-prone"]
+          },
+          {
+            "id": "p008",
+            "name": "Jett Mercer",
+            "overall": 75,
+            "salary": 6,
+            "traits": ["Dirty player"]
+          }
+        ]
+      },
+      {
+        "id": "t003",
+        "name": "Frostline Kings",
+        "salary_cap_limit": 80,
+        "salary_cap_used": 27,
+        "roster": [
+          {
+            "id": "p009",
+            "name": "Roman Pike",
+            "overall": 83,
+            "salary": 9,
+            "traits": ["Clutch"]
+          },
+          {
+            "id": "p010",
+            "name": "Cal Ryder",
+            "overall": 78,
+            "salary": 7,
+            "traits": ["Locker room leader", "Dirty player"]
+          },
+          {
+            "id": "p011",
+            "name": "Wyatt Cole",
+            "overall": 75,
+            "salary": 6,
+            "traits": ["Injury-prone"]
+          },
+          {
+            "id": "p012",
+            "name": "Finn Stroud",
+            "overall": 73,
+            "salary": 5,
+            "traits": ["Clutch"]
+          }
+        ]
+      }
+    ],
+    "prospects": [
+      {
+        "id": "pr001",
+        "name": "Nate Mercer",
+        "overall": 72,
+        "salary": 4,
+        "traits": ["Clutch"]
+      },
+      {
+        "id": "pr002",
+        "name": "Declan Shore",
+        "overall": 70,
+        "salary": 3,
+        "traits": ["Injury-prone"]
+      },
+      {
+        "id": "pr003",
+        "name": "Milo Arden",
+        "overall": 69,
+        "salary": 3,
+        "traits": ["Locker room leader"]
+      }
+    ],
+    "games": []
+  }
+}

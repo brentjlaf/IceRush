@@ -1,0 +1,99 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+h1, h2, h3 {
+  margin-top: 0;
+}
+
+.subhead {
+  color: #93c5fd;
+}
+
+.panel {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.two-col {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+select,
+input,
+button {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+button {
+  background: #2563eb;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.alert {
+  background: #14532d;
+  border: 1px solid #22c55e;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.team-card {
+  border: 1px solid #475569;
+  padding: 12px;
+  border-radius: 8px;
+  background: #0b1220;
+}
+
+.play-log {
+  list-style: none;
+  padding-left: 0;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.play-log li {
+  border-bottom: 1px dashed #334155;
+  padding: 7px 0;
+}
+
+.inline-form {
+  margin-top: 12px;
+}
