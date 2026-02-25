@@ -23,6 +23,14 @@ python3 -m http.server 4173
 ```
 Then open `http://localhost:4173/client/`.
 
+### Troubleshooting: `file://` CORS error in browser
+If you open `client/index.html` directly from disk (for example by double-clicking it), the browser will load the page from a `file://` URL. In that mode, `main.js` is treated as a cross-origin request and is blocked with errors like:
+
+- `Access to script at 'file:///.../client/main.js' from origin 'null' has been blocked by CORS policy`
+- `Failed to load resource: net::ERR_FAILED`
+
+Use a local web server instead (as shown in **Run**) and open `http://localhost:4173/client/`.
+
 ## Checks
 ```bash
 npm test
